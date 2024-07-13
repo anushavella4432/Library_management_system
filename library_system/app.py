@@ -341,9 +341,6 @@ def add_book():
     result = library_system.add_book()
     return render_template('result.html', result=result)
 
-def display_all_books():
-    return render_template('display_all_books.html', books=books)
-
 @app.route('/display_all_books')
 def display_all_books():
     books = library_system.display_all_books()
@@ -378,6 +375,7 @@ def delete_book():
     result = library_system.delete_book()
     return render_template('result.html', result=result)
 
+
 @app.route('/issue_book', methods=['GET', 'POST'])
 def issue_book():
     if request.method == 'POST':
@@ -385,35 +383,21 @@ def issue_book():
         book_no = request.form['book_no']
         issue_date = request.form['issue_date']
         return_date = request.form['return_date']
-
+        
         student_found = False
-        book_found = False
-
-        # Check if student exists
         for student in students:
             if student['id'] == student_id:
+                student['book_issued'] = book_no
+                student['issue_date'] = issue_date
+                student['return_date'] = return_date
+                student['books_issued'] += 1
                 student_found = True
                 break
-
-        # Check if book exists and is available
-        for book in books:
-            if book['id'] == book_no and book['available']:
-                book_found = True
-                book['available'] = False  # Mark book as issued
-                break
-
-        if student_found and book_found:
-            for student in students:
-                if student['id'] == student_id:
-                    student['book_issued'] = book_no
-                    student['issue_date'] = issue_date
-                    student['return_date'] = return_date
-                    student['books_issued'] += 1
-                    break
-            return render_template('issue_book_result.html', result="Book issued successfully")
+        
+        if student_found:
+            return render_template('display_all_students.html', students=students)
         else:
-            error_msg = "Invalid student ID or book number" if not student_found or not book_found else ""
-            return render_template('issue_book_result.html', result=error_msg)
+            return render_template('issue_book_result.html', result="Book issued Successfully")
     else:
         return render_template('issue_book_form.html')
 @app.route('/return_book', methods=['GET', 'POST'])
